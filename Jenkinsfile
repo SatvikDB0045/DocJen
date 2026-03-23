@@ -1,24 +1,32 @@
 pipeline {
     agent any
-    environment {
-        DOCKER_HUB_USER = 'satvikdb0045'
-        IMAGE_NAME = 'myapp'
-    }
+
     stages {
-        stage('Build Image') {
+
+        stage('Build Docker Image') {
             steps {
-                // Use 'bat' for Windows environments
-                bat "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest ." [cite: 100, 140, 180]
+                bat 'docker build -t satvikdb0045/myapp:latest .'
             }
         }
-        stage('Push to Hub') {
+
+        stage('Login to Docker Hub') {
             steps {
-                // Uses the 'dockerhub-creds' ID you created in Jenkins [cite: 196, 202]
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DB_PASS', usernameVariable: 'DB_USER')]) {
-                    bat "echo %DB_PASS% | docker login -u %DB_USER% --password-stdin" [cite: 215]
-                    bat "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest" [cite: 186]
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    bat 'echo %PASS% | docker login -u %USER% --password-stdin'
                 }
             }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                bat 'docker push satvikdb0045/myapp:latest'
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo 'Pipeline failed'
         }
     }
 }
