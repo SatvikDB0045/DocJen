@@ -1,55 +1,30 @@
 pipeline {
     agent any
-
     environment {
-        DOCKER_IMAGE = "akshatha29/app-image"
+        DOCKER_HUB_USER = 'satvikdb0045'
+        IMAGE_NAME = 'myapp'
+        IMAGE_TAG = 'v1'
     }
-
     stages {
-
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                git 'https://github.com/akshatha29/https://github.com/akshathavishal2901/final.git'
+                checkout scm
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${DOCKER_IMAGE}:latest")
+                    sh "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
                 }
             }
         }
-
-        stage('Login to Docker Hub') {
+        stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME')]) {
+                    sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
+                    sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    docker.withRegistry('', 'dockerhub-creds') {
-                        docker.image("${DOCKER_IMAGE}:latest").push()
-                    }
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Image successfully built and pushed to Docker Hub'
-        }
-        failure {
-            echo 'Pipeline failed'
         }
     }
 }
