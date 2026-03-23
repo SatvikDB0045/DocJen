@@ -3,26 +3,20 @@ pipeline {
     environment {
         DOCKER_HUB_USER = 'satvikdb0045'
         IMAGE_NAME = 'myapp'
-        IMAGE_TAG = 'v1'
     }
     stages {
-        stage('Checkout') {
+        stage('Build Image') {
             steps {
-                checkout scm
+                // Use 'bat' for Windows environments
+                bat "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest ." [cite: 100, 140, 180]
             }
         }
-        stage('Build Docker Image') {
+        stage('Push to Hub') {
             steps {
-                script {
-                    sh "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
-                }
-            }
-        }
-        stage('Push to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME')]) {
-                    sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
-                    sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+                // Uses the 'dockerhub-creds' ID you created in Jenkins [cite: 196, 202]
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DB_PASS', usernameVariable: 'DB_USER')]) {
+                    bat "echo %DB_PASS% | docker login -u %DB_USER% --password-stdin" [cite: 215]
+                    bat "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest" [cite: 186]
                 }
             }
         }
