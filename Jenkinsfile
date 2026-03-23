@@ -5,7 +5,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t satvikdb0045/myapp:latest .'
+                bat 'docker build -t SatvikDB0045/myapp:latest .'
             }
         }
 
@@ -19,7 +19,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                bat 'docker push satvikdb0045/myapp:latest'
+                bat 'docker push SatvikDB0045/myapp:latest'
             }
         }
     }
